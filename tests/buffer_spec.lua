@@ -11,7 +11,7 @@ assert(
 )
 
 -- Test exist, is_open, create and delete
-local new_buf_nr = buffer.create_buffer({ make_scratch = true })
+local new_buf_nr = buffer.create({ make_scratch = true })
 assert(buffer.exist(new_buf_nr), "buffer should exist")
 assert(buffer.is_open(new_buf_nr), "buffer should be open")
 buffer.close(new_buf_nr)
@@ -21,7 +21,7 @@ buffer.delete(new_buf_nr)
 assert(buffer.exist(new_buf_nr) == false, "buffer should not exist")
 assert(buffer.is_open(new_buf_nr) == false, "buffer should be closed")
 
-new_buf_nr = buffer.create_buffer({ make_scratch = true })
+new_buf_nr = buffer.create({ make_scratch = true })
 buffer.append_text(new_buf_nr, "This is a test to append")
 buffer.append_text(new_buf_nr, { "two lines", "more" })
 local buff_lines = vim.api.nvim_buf_get_lines(new_buf_nr, 1, -1, false)

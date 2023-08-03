@@ -1,4 +1,4 @@
-local Buff = {}
+local M = {}
 
 local EXPAND_PARAM = {
   CURR_BUF_PATH = "%",
@@ -7,7 +7,7 @@ local EXPAND_PARAM = {
 
 ---Get buffers path
 ---@param absolute boolean?
-Buff.get_path = function(absolute)
+M.get_path = function(absolute)
   local addon = ""
   if absolute then
     addon = ":p"
@@ -21,7 +21,7 @@ end
 
 ---Get current buffer
 ---@return number
-Buff.get_bufnr = function ()
+M.get_bufnr = function ()
   return vim.api.nvim_get_current_buf()
 end
 
@@ -29,22 +29,22 @@ end
 ---    The buffer can exist without being open
 ---@param bufnr number
 ---@return boolean
-Buff.exist = function(bufnr)
+M.exist = function(bufnr)
   return vim.fn.buffer_exists(bufnr) == 1
 end
 
 ---Check if the buffer exist AND is open
 ---@param bufnr number
 ---@return boolean
-Buff.is_open = function(bufnr)
+M.is_open = function(bufnr)
   assert(type(bufnr) == "number", "number expected but " .. bufnr .. " given")
-  return Buff.exist(bufnr) and vim.bo[bufnr].buflisted
+  return M.exist(bufnr) and vim.bo[bufnr].buflisted
 end
 
 ---Create a new buffer
 ---@param opts table
 ---@return number
-Buff.create_buffer = function(opts)
+M.create = function(opts)
   assert(type(opts) == "table", "options should be a table")
   return vim.api.nvim_create_buf(opts.make_listed or true, opts.make_scratch or false)
 end
@@ -52,18 +52,18 @@ end
 ---Give a name to a buffer
 ---@param bufnr number
 ---@param name string
-Buff.set_buffer_name = function(bufnr, name)
+M.set_name = function(bufnr, name)
   -- Note: setting buffer name will give it full path to project root
-  assert(Buff.exist(bufnr), "given buffer does not exist")
+  assert(M.exist(bufnr), "given buffer does not exist")
   return vim.api.nvim_buf_set_name(bufnr, name)
 end
 
 ---Give a name to a buffer
 ---@param bufnr number
 ---@return string
-Buff.get_buffer_name = function(bufnr)
+M.get_name = function(bufnr)
   -- Note: Getting buffer name returns full path (wether it exists or not)
-  assert(Buff.exist(bufnr), "given buffer does not exist")
+  assert(M.exist(bufnr), "given buffer does not exist")
   return vim.api.nvim_buf_get_name(bufnr)
 end
 
@@ -71,7 +71,7 @@ end
 ---@param bufnr number
 ---@param text any
 ---@return nil
-Buff.append_text = function(bufnr, text)
+M.append_text = function(bufnr, text)
   -- Code here
   if not text then
     return nil
@@ -83,23 +83,23 @@ end
 
 ---Clear buffer content
 ---@param bufnr number
-Buff.clear_text = function (bufnr)
-  assert(Buff.exist(bufnr), "Buffer to clear must exist")
+M.clear_text = function (bufnr)
+  assert(M.exist(bufnr), "Buffer to clear must exist")
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
 end
 
 ---Close (but not delete) given buffer
 ---@param bufnr number
-Buff.close = function(bufnr)
-  assert(Buff.exist(bufnr), "buffer to close must exist")
+M.close = function(bufnr)
+  assert(M.exist(bufnr), "buffer to close must exist")
   vim.api.nvim_buf_delete(bufnr, { unload = true })
 end
 
 ---Delete given buffer
 ---@param bufnr number
 ---@param force boolean?
-Buff.delete = function(bufnr, force)
-  assert(Buff.exist(bufnr), "buffer to delete must exist")
+M.delete = function(bufnr, force)
+  assert(M.exist(bufnr), "buffer to delete must exist")
   vim.api.nvim_buf_delete(bufnr, { unload = false, force = force or false })
 end
 
@@ -107,7 +107,7 @@ end
 ---Get selected text from current buffer
 ---@return string 
 ---TODO: Find a simpler way to do this.
-Buff.get_buf_selected_text = function()
+M.get_selected_text = function()
   local _, start_row, start_col = unpack(vim.fn.getcurpos())
   local end_row = tonumber(vim.fn.line "v")
   local end_col = tonumber(vim.fn.col "v")
@@ -132,4 +132,15 @@ Buff.get_buf_selected_text = function()
   return vim.fn.join(text, " ")
 end
 
-return Buff
+---Reload buffer from disc
+M.reload = function ()
+  -- This reload method is aim to be used after, for example, an autocmd
+  -- that runs a formatter. Instead of trigger a focus event, try to force it
+  if vim.api.nvim_get_option_value then
+    vim.cmd("checktime")
+  else
+    vim.cmd("e " .. M.get_path())
+  end
+end
+
+return M
