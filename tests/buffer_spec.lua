@@ -1,4 +1,3 @@
----@type
 local buffer = require("excuses.buffer")
 
 -- Test get_path
